@@ -13,8 +13,8 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
+  - Background
+  - Character
   - 
   - 
   - 
@@ -38,6 +38,12 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 481428163
+    locked: 0
+  - name: Character
+    uniqueID: 1874928745
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
