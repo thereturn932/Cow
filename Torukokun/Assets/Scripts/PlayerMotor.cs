@@ -12,14 +12,30 @@ public class PlayerMotor : MonoBehaviour {
 	void Start () {
         agent = GetComponent<NavMeshAgent>();
 	}
-	
-    public void FollowTarget()
+    private void Update()
     {
+        if (target != null)
+        {
+            agent.SetDestination(target.position);
+        }
+        if (Vector3.Distance(transform.position, target.transform.position) < 4)
+        {
+            target = null;
+        }
+    }
 
+    public void MoveToPoint (Vector3 point)
+    {
+            agent.SetDestination(point);
+    }
+
+    public void FollowTarget(Interactable newTarget)
+    {
+        target = newTarget.transform;
     }
 
     public void StopFollowingTarget()
     {
-
+        target = null;
     }
 }

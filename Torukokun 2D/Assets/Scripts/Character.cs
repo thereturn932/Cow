@@ -4,14 +4,25 @@ using UnityEngine;
 
 public class Character : MonoBehaviour {
 
-    private Rigidbody2D myRigidBody;
+    private static Character instance;
+
+    public static Character Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = GameObject.FindObjectOfType<Character>();    
+            }
+            return instance;
+        }
+    }
 
     private Animator myAnimator;
 
     [SerializeField]
     private float MovementSpeed = 1;
 
-    private bool isAttacking;
 
     private bool facingRight;
 
@@ -27,16 +38,22 @@ public class Character : MonoBehaviour {
     [SerializeField]
     private LayerMask whatIsGround;
 
-    private bool isGrounded;
-    private bool jump;
 
     [SerializeField]
     private bool airControl;
-    
-	// Use this for initialization
-	void Start () {
+
+    public Rigidbody2D MyRigidbody { get; set; }
+
+    public bool Attack { get; set; }
+    public bool Jump { get; set; }
+    public bool OnGround { get; set; }
+
+
+
+    // Use this for initialization
+    void Start () {
         facingRight = true;
-        myRigidBody = GetComponent<Rigidbody2D>();
+        MyRigidbody = GetComponent<Rigidbody2D>();
         myAnimator = GetComponent<Animator>();
 	}
 
@@ -49,49 +66,43 @@ public class Character : MonoBehaviour {
     void FixedUpdate () {
         float horizontal = Input.GetAxis("Horizontal");
 
-        isGrounded = IsGrounded();
+        OnGround = IsGrounded();
 
         HandleMovement(horizontal);
 
         Flip(horizontal);
 
-        HandleAttacks();
 
-        ResetValues();
+        HandleLayers();
 	}
 
-    private void HandleAttacks()
-    {
-        if (isAttacking && !this.myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
-        {
-            myAnimator.SetTrigger("attack");
-            myRigidBody.velocity = Vector2.zero;
-        }
-    }
 
     private void HandleInput()
     {
         if (Input.GetKeyDown(KeyCode.LeftShift))
         {
-            isAttacking = true;
+            myAnimator.SetTrigger("attack");
         }
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            jump = true;
+            myAnimator.SetTrigger("jump");
         }
 
     }
 
     private void HandleMovement(float horizontal)
     {
-        if (!this.myAnimator.GetCurrentAnimatorStateInfo(0).IsTag("Attack"))
+        if (MyRigidbody.velocity.y < 0)
         {
-            myRigidBody.velocity = new Vector2(horizontal * MovementSpeed, myRigidBody.velocity.y);
+            myAnimator.SetBool("land", true);
         }
-        if (isGrounded && jump)
+        if (!Attack && (OnGround || airControl))
         {
-            isGrounded = false;
-            myRigidBody.AddForce(new Vector2(0, jumpForce));
+            MyRigidbody.velocity = new Vector2(horizontal*MovementSpeed, MyRigidbody.velocity.y);
+        }
+        if (Jump && MyRigidbody.velocity.y == 0)
+        {
+            MyRigidbody.AddForce(new Vector2(0, jumpForce));
         }
 
         myAnimator.SetFloat("speed", Mathf.Abs(horizontal));
@@ -112,15 +123,10 @@ public class Character : MonoBehaviour {
 
     }
 
-    private void ResetValues()
-    {
-        isAttacking = false;
-        jump = false;
-    }
 
     private bool IsGrounded()
     {
-        if (myRigidBody.velocity.y <= 0)
+        if (MyRigidbody.velocity.y <= 0)
         {
             foreach (Transform point in groundPoints)
             {
@@ -137,5 +143,17 @@ public class Character : MonoBehaviour {
             }    
         }
         return false;
+    }
+
+    private void HandleLayers()
+    {
+        if (!OnGround)
+        {
+            myAnimator.SetLayerWeight(1, 1);
+        }
+        else
+        {
+            myAnimator.SetLayerWeight(1, 0);
+        }
     }
 }
