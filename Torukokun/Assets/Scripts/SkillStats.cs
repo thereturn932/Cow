@@ -6,6 +6,6 @@ class SkillStats : MonoBehaviour {
 
     public int ID;
     public string nameOfSkill;
-    public int damage;
+    public string type;
 
 }
